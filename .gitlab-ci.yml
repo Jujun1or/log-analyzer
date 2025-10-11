@@ -1,0 +1,67 @@
+image: maven:3.9.11-eclipse-temurin-24-noble
+
+.mvn.cache:
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .m2/repository
+
+.docker:
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: "/certs/client"
+    GITLAB_DOCKER_PROXY: gitlab.education.tbank.ru:443/backend-academy-java-2025/lecture-materials/dependency_proxy/containers
+  image: docker
+  tags:
+    - dind
+  services:
+    - name: docker:dind
+      alias: docker
+  before_script:
+    - echo "$CI_JOB_TOKEN" | docker login gitlab.education.tbank.ru:443 -u gitlab-ci-token --password-stdin
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_REF_PROTECTED == 'true'
+    - if: $CI_COMMIT_BRANCH == 'master'
+
+stages:
+  - build
+  - lint
+  - test
+
+build:
+  stage: build
+  script:
+    - mvn clean package shade:shade -DskipTests=true -Djacoco.skip=true
+  artifacts:
+    paths:
+      - target/hw3-logs-1.0.jar
+
+linter:
+  stage: lint
+  script:
+    - mvn clean compile -am spotless:check modernizer:modernizer spotbugs:check pmd:check pmd:cpd-check
+
+module_tests:
+  stage: test
+  extends:
+    - .mvn.cache
+  script:
+    - mvn clean verify
+
+integration_tests:
+  stage: test
+  extends:
+    - .docker
+  needs:
+    - job: build
+      artifacts: true
+    - job: module_tests
+  script:
+    - sh ./scripts/run_acceptance_tests.sh
