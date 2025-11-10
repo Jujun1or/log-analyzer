@@ -48,11 +48,11 @@ function verifyAllTestsPassed {
 }
 
 function runTest {
- echo "Test [№${testNumber}][$1]: $2; expected exit code: $3; args: ${@:4};"
+ echo "Test [№${testNumber}][$1]: $2; expected exit code: $3; args: ${*:4};"
  docker run --rm -v $(pwd)/scripts/data:/tmp/data logs-app:$tag "${@:4}"
 
  exit_code=$?
- assertExitCode $3 $exit_code
+ assertExitCode "$3" $exit_code
 
  testNumber=$((testNumber+1))
 }
