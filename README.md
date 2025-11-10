@@ -17,7 +17,7 @@
 
 ### 1. Интерфейс программы
 
-Программа должна представлять из себя утилиту командной строки, которая принимает на вход следующие параметры:
+Программа должна представлять собой утилиту командной строки, которая принимает на вход следующие параметры:
 
 - `--path, -p` - путь к одному или нескольким NGINX лог-файлам
     - файлы могут быть как **локальными** (путь до локального
@@ -113,7 +113,7 @@ java -jar log-analyzer.jar --path logs/*.log --format markdown --output report.m
 - распределение запросов по датам в процентом соотношении от общего числа **(+доп. баллы)**
 - уникальные используемые протоколы передачи данных (HTTP/1, HTTP/2, etc) **(+доп. баллы)**
 
-Точность результатов при расчёте статистики должна **быть 2 знака после запятой**.
+Точность результатов при расчёте статистики должна быть **2 знака после запятой**.
 
 ### 4. Вывод программы
 
@@ -142,13 +142,16 @@ java -jar log-analyzer.jar --path logs/*.log --format markdown --output report.m
             "type": "object",
             "properties": {
                 "average": {
-                    "type": "integer"
+                    "type": "number",
+                    "multipleOf": 0.01
                 },
                 "max": {
-                    "type": "integer"
+                    "type": "number",
+                    "multipleOf": 0.01
                 },
                 "p95": {
-                    "type": "integer"
+                    "type": "number",
+                    "multipleOf": 0.01
                 }
             },
             "required": [
@@ -213,7 +216,8 @@ java -jar log-analyzer.jar --path logs/*.log --format markdown --output report.m
                             "type": "integer"
                         },
                         "totalRequestsPercentage": {
-                            "type": "number"
+                            "type": "number",
+                            "multipleOf": 0.01
                         }
                     },
                     "required": [
@@ -289,7 +293,7 @@ java -jar log-analyzer.jar --path logs/*.log --format markdown --output report.m
             "date": "2024-03-01",
             "weekday": "Monday",
             "totalRequestsCount": 2981,
-            "totalRequestsPercentage": 12.1
+            "totalRequestsPercentage": 12.10
         }
     ],
     "uniqueProtocols": [
