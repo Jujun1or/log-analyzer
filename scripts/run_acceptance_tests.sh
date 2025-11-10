@@ -48,11 +48,11 @@ function verifyAllTestsPassed {
 }
 
 function runTest {
- echo "Test [№${testNumber}][$1]: $2; expected exit code: $3; args: ${@:4};"
+ echo "Test [№${testNumber}][$1]: $2; expected exit code: $3; args: ${*:4};"
  docker run --rm -v $(pwd)/scripts/data:/tmp/data logs-app:$tag "${@:4}"
 
  exit_code=$?
- assertExitCode $3 $exit_code
+ assertExitCode "$3" $exit_code
 
  testNumber=$((testNumber+1))
 }
@@ -63,7 +63,7 @@ runTest "negative" "input file does not exist" 2 \
   -p /tmp/data/input/nonexistent.txt -f json -o /tmp/data/output/output1.json
 
 runTest "negative" "input file has unsupported extension" 2 \
-  -p /tmp/data/input/file1.log -f json -o /tmp/data/output/output2.json
+  -p /tmp/data/input/file1.html -f json -o /tmp/data/output/output2.json
 
 runTest "negative" "output file already exists" 2 \
   -p /tmp/data/input/file2.txt -f json -o /tmp/data/output/existing.json
