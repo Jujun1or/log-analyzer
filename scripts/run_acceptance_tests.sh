@@ -4,11 +4,9 @@
 
 echo 'Running acceptance tests...'
 
-# tag=$CI_PROJECT_NAME-$CI_COMMIT_SHA
-tag="local-1"
+tag=$CI_PROJECT_NAME-$CI_COMMIT_SHA
 echo "Building Docker image logs-app:$tag"
-# docker build --build-arg RUNTIME_IMAGE=$GITLAB_DOCKER_PROXY/eclipse-temurin:24-jre . -q -t logs-app:$tag
-docker build . -q -t logs-app:$tag
+docker build --build-arg RUNTIME_IMAGE=$GITLAB_DOCKER_PROXY/eclipse-temurin:24-jre . -q -t logs-app:$tag
 
 testNumber=0
 failedTests=0
