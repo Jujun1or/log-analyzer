@@ -82,13 +82,13 @@ runTest "negative" "unsupported output format" 2 \
   -p /tmp/data/input/file2.txt -f txt -o /tmp/data/output/output7.txt
 
 runTest "negative" "invalid date format (--from)" 2 \
-  -p /tmp/data/input/file2.txt -f json -o /tmp/data/output/output8.json --from="2025.01.02"
+  -p /tmp/data/input/file2.txt -f json -o /tmp/data/output/output8.json --from "2025.01.02"
 
 runTest "negative" "invalid date format (--to)" 2 \
-  -p /tmp/data/input/file2.txt -f json -o /tmp/data/output/output9.json --to="2025.01.02"
+  -p /tmp/data/input/file2.txt -f json -o /tmp/data/output/output9.json --to "2025.01.02"
 
 runTest "negative" "--from > --to" 2 \
-  -p /tmp/data/input/file2.txt -f json -o /tmp/data/output/output10.json --from="2025-01-02" --to="2025-01-01"
+  -p /tmp/data/input/file2.txt -f json -o /tmp/data/output/output10.json --from "2025-01-02" --to "2025-01-01"
 
 runTest "negative" "required parameter -p is missing" 2 \
   -f json -o /tmp/data/output/output11.json
