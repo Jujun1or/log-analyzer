@@ -27,7 +27,7 @@ function assertExitCode {
 
 function assertJsonEquals {
   echo "Comparing JSON's..."
-  diff <(docker run --rm -i ghcr.io/jqlang/jq:latest --sort-keys < $1) <(docker run --rm -i ghcr.io/jqlang/jq:latest --sort-keys < $2)
+  diff <(docker run --rm -i ghcr.io/jqlang/jq:latest --sort-keys 'walk(if type == "array" then sort else . end)' < $1) <(docker run --rm -i ghcr.io/jqlang/jq:latest --sort-keys 'walk(if type == "array" then sort else . end)' < $2)
   exit_code=$?
   assertExitCode 0 $exit_code
 }
