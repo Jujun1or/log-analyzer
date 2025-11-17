@@ -94,7 +94,7 @@ runTest "negative" "required parameter -p is missing" 2 \
   -f json -o /tmp/data/output/output11.json
 
 runTest "negative" "required parameter -f is missing" 2 \
-  -p /tmp/data/input/nonexistent.txt -o /tmp/data/output/output12.json
+  -p /tmp/data/input/file2.txt -o /tmp/data/output/output12.json
 
 runTest "negative" "required parameter -o is missing" 2 \
   -p /tmp/data/input/file2.txt -f json
