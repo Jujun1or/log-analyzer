@@ -48,8 +48,9 @@ function verifyAllTestsPassed {
 }
 
 function runTest {
- echo "Test [№${testNumber}][$1]: $2; expected exit code: $3; args: ${*:4};"
- docker run --rm -v $(pwd)/scripts/data:/tmp/data logs-app:$tag "${@:4}"
+ echo "Test [№${testNumber}][$1]: $2; expected exit code: $3;"
+ shift 3
+ docker run --rm -v $(pwd)/scripts/data:/tmp/data logs-app:$tag "$@"
 
  exit_code=$?
  assertExitCode "$3" $exit_code
@@ -81,28 +82,28 @@ runTest "negative" "unsupported output format" 2 \
   -p /tmp/data/input/file2.txt -f txt -o /tmp/data/output/output7.txt
 
 runTest "negative" "invalid date format (--from)" 2 \
-  -p /tmp/data/input/file2.txt -f txt -o /tmp/data/output/output8.json --from="2025.01.02"
+  -p /tmp/data/input/file2.txt -f json -o /tmp/data/output/output8.json --from "2025.01.02"
 
 runTest "negative" "invalid date format (--to)" 2 \
-  -p /tmp/data/input/file2.txt -f txt -o /tmp/data/output/output9.json --to="2025.01.02"
+  -p /tmp/data/input/file2.txt -f json -o /tmp/data/output/output9.json --to "2025.01.02"
 
 runTest "negative" "--from > --to" 2 \
-  -p /tmp/data/input/file2.txt -f txt -o /tmp/data/output/output10.json --from="2025-01-02" --to="2025-01-01"
+  -p /tmp/data/input/file2.txt -f json -o /tmp/data/output/output10.json --from "2025-01-02" --to "2025-01-01"
 
 runTest "negative" "required parameter -p is missing" 2 \
   -f json -o /tmp/data/output/output11.json
 
 runTest "negative" "required parameter -f is missing" 2 \
-  -p /tmp/data/input/nonexistent.txt -o /tmp/data/output/output12.json
+  -p /tmp/data/input/file2.txt -o /tmp/data/output/output12.json
 
 runTest "negative" "required parameter -o is missing" 2 \
-  -p /tmp/data/input/nonexistent.txt -f json -o /tmp/data/output/output13.json
+  -p /tmp/data/input/file2.txt -f json
 
 runTest "negative" "unsupported parameter is present" 2 \
-  -p /tmp/data/input/nonexistent.txt -f json -o /tmp/data/output/output14.json --custom=argument
+  -p /tmp/data/input/file2.txt -f json -o /tmp/data/output/output14.json --custom=argument
 
 runTest "positive" "properly calculate statistics from multiple local files" 0 \
-  -p /tmp/data/input/logs**.txt -f json -o /tmp/data/output/stats.json
+  -p /tmp/data/input/logs/*.txt -f json -o /tmp/data/output/stats.json
 
 assertJsonEquals ./scripts/data/output/expected.json ./scripts/data/output/stats.json
 
