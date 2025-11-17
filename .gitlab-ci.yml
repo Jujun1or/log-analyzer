@@ -62,7 +62,6 @@ integration_tests:
   needs:
     - job: build
       artifacts: true
-    # Disabled for debug
-    # - job: module_tests
+    - job: module_tests
   script:
     - sh ./scripts/run_acceptance_tests.sh
