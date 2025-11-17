@@ -54,10 +54,9 @@ public class Application implements Runnable {
                 currentParameter = element.startsWith("--") ? element.substring(2) : element.substring(1);
                 argsPerParameter.putIfAbsent(currentParameter, new ArrayList<>());
             } else {
-                argsPerParameter.get(
-                        Optional.ofNullable(currentParameter)
-                            .orElse(UNDEFINED_PARAMETER))
-                    .add(element);
+                argsPerParameter
+                        .get(Optional.ofNullable(currentParameter).orElse(UNDEFINED_PARAMETER))
+                        .add(element);
             }
         }
 
@@ -69,12 +68,13 @@ public class Application implements Runnable {
         for (var param : params) {
             paths.addAll(argsPerParam.getOrDefault(param, List.of()));
         }
-        System.out.printf("%s: %s%n",
-            description, paths.stream()
-                .map(it ->
-                    it.contains("*")
-                        ? "glob: " + it
-                        : "path: %s, exists: %s".formatted(it, Files.exists(Path.of(it))))
-                .collect(Collectors.joining(";")));
+        System.out.printf(
+                "%s: %s%n",
+                description,
+                paths.stream()
+                        .map(it -> it.contains("*")
+                                ? "glob: " + it
+                                : "path: %s, exists: %s".formatted(it, Files.exists(Path.of(it))))
+                        .collect(Collectors.joining(";")));
     }
 }
