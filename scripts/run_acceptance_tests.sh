@@ -4,9 +4,11 @@
 
 echo 'Running acceptance tests...'
 
-tag=$CI_PROJECT_NAME-$CI_COMMIT_SHA
+# tag=$CI_PROJECT_NAME-$CI_COMMIT_SHA
+tag="local-1"
 echo "Building Docker image logs-app:$tag"
-docker build --build-arg RUNTIME_IMAGE=$GITLAB_DOCKER_PROXY/eclipse-temurin:24-jre . -q -t logs-app:$tag
+# docker build --build-arg RUNTIME_IMAGE=$GITLAB_DOCKER_PROXY/eclipse-temurin:24-jre . -q -t logs-app:$tag
+docker build . -q -t logs-app:$tag
 
 testNumber=0
 failedTests=0
@@ -81,13 +83,13 @@ runTest "negative" "unsupported output format" 2 \
   -p /tmp/data/input/file2.txt -f txt -o /tmp/data/output/output7.txt
 
 runTest "negative" "invalid date format (--from)" 2 \
-  -p /tmp/data/input/file2.txt -f txt -o /tmp/data/output/output8.json --from="2025.01.02"
+  -p /tmp/data/input/file2.txt -f json -o /tmp/data/output/output8.json --from="2025.01.02"
 
 runTest "negative" "invalid date format (--to)" 2 \
-  -p /tmp/data/input/file2.txt -f txt -o /tmp/data/output/output9.json --to="2025.01.02"
+  -p /tmp/data/input/file2.txt -f json -o /tmp/data/output/output9.json --to="2025.01.02"
 
 runTest "negative" "--from > --to" 2 \
-  -p /tmp/data/input/file2.txt -f txt -o /tmp/data/output/output10.json --from="2025-01-02" --to="2025-01-01"
+  -p /tmp/data/input/file2.txt -f json -o /tmp/data/output/output10.json --from="2025-01-02" --to="2025-01-01"
 
 runTest "negative" "required parameter -p is missing" 2 \
   -f json -o /tmp/data/output/output11.json
@@ -96,13 +98,13 @@ runTest "negative" "required parameter -f is missing" 2 \
   -p /tmp/data/input/nonexistent.txt -o /tmp/data/output/output12.json
 
 runTest "negative" "required parameter -o is missing" 2 \
-  -p /tmp/data/input/nonexistent.txt -f json -o /tmp/data/output/output13.json
+  -p /tmp/data/input/file2.txt -f json
 
 runTest "negative" "unsupported parameter is present" 2 \
-  -p /tmp/data/input/nonexistent.txt -f json -o /tmp/data/output/output14.json --custom=argument
+  -p /tmp/data/input/file2.txt -f json -o /tmp/data/output/output14.json --custom=argument
 
 runTest "positive" "properly calculate statistics from multiple local files" 0 \
-  -p /tmp/data/input/logs**.txt -f json -o /tmp/data/output/stats.json
+  -p /tmp/data/input/logs/*.txt -f json -o /tmp/data/output/stats.json
 
 assertJsonEquals ./scripts/data/output/expected.json ./scripts/data/output/stats.json
 

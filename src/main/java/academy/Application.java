@@ -10,15 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 @Command(name = "Application Example", version = "Example 1.0", mixinStandardHelpOptions = true)
 public class Application implements Runnable {
 
-    private static final Logger logger = LoggerFactory.getLogger(Application.class);
     private static final String UNDEFINED_PARAMETER = "undefined";
 
     public static void main(String[] args) {
@@ -39,7 +36,7 @@ public class Application implements Runnable {
     @Deprecated(forRemoval = true)
     private static void debugArgs(List<String> args) {
         var argsPerParam = getArgumentsPerParameter(args);
-        logger.debug("Входные параметры программы: {}", argsPerParam);
+        System.out.printf("Входные параметры программы: %s%n", argsPerParam);
 
         logPaths("Пути к лог-файлам", argsPerParam, "p", "path");
         logPaths("Пути к отчетам", argsPerParam, "o", "output");
@@ -52,7 +49,7 @@ public class Application implements Runnable {
         var queue = new ArrayDeque<>(args);
         String currentParameter = null;
         while (!queue.isEmpty()) {
-            var element = args.removeFirst();
+            var element = queue.removeFirst();
             if (element.startsWith("-")) {
                 currentParameter = element.startsWith("--") ? element.substring(2) : element.substring(1);
                 argsPerParameter.putIfAbsent(currentParameter, new ArrayList<>());
@@ -72,7 +69,7 @@ public class Application implements Runnable {
         for (var param : params) {
             paths.addAll(argsPerParam.getOrDefault(param, List.of()));
         }
-        logger.debug("{}: {}",
+        System.out.printf("%s: %s%n",
             description, paths.stream()
                 .map(it ->
                     it.contains("*")
