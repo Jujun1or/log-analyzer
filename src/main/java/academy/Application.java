@@ -1,10 +1,31 @@
 package academy;
 
+import academy.cli.ArgumentsValidator;
+import academy.dto.Arguments;
+import academy.enums.ReportFormat;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.List;
 
-@Command(name = "Application Example", version = "Example 1.0", mixinStandardHelpOptions = true)
+@Command(name = "Log Analyzer", version = "Example 1.0", mixinStandardHelpOptions = true)
 public class Application implements Runnable {
+
+    @CommandLine.Option(names = {"--path", "-p"}, required = true)
+    private List<String> paths;
+
+    @CommandLine.Option(names = {"--format", "-f"})
+    private String formatRaw;
+
+    @CommandLine.Option(names = {"--output", "-o"}, required = true)
+    private Path outputFile;
+
+    @CommandLine.Option(names = "--from")
+    private String fromRaw;
+
+    @CommandLine.Option(names = "--to")
+    private String toRaw;
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Application()).execute(args);
@@ -13,6 +34,23 @@ public class Application implements Runnable {
 
     @Override
     public void run() {
-        // реализуйте логику по парсингу лог-файлов :)
+        try {
+            ArgumentsValidator.validate(paths, formatRaw, outputFile, fromRaw, toRaw);
+
+            ReportFormat reportFormat = ReportFormat.valueOf(formatRaw.toUpperCase());
+            Instant from = ArgumentsValidator.parseInstantOrNull(fromRaw);
+            Instant to   = ArgumentsValidator.parseInstantOrNull(toRaw);
+
+            Arguments args = new Arguments(paths, reportFormat, outputFile, from, to);
+            System.out.println(args);
+
+
+        } catch (IllegalArgumentException e){
+            System.err.println(e.getMessage());
+            System.exit(2);
+        } catch (Exception e){
+            System.err.println(e.getMessage());
+            System.exit(1);
+        }
     }
 }
