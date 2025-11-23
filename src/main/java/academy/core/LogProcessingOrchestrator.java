@@ -24,7 +24,9 @@ public class LogProcessingOrchestrator {
     private static final Logger log = LogManager.getLogger(LogProcessingOrchestrator.class);
 
     public static void run(Arguments arguments){
-            List<ResolvedSource> resolvedSources = LogSourceResolver.resolve(arguments.paths());
+        log.info("Starting log analysis");
+        List<ResolvedSource> resolvedSources = LogSourceResolver.resolve(arguments.paths());
+        log.info("Total resolved sources: {}", resolvedSources.size());
         Instant from = arguments.from();
         Instant to = arguments.to();
 
@@ -59,7 +61,9 @@ public class LogProcessingOrchestrator {
         ReportTotalStats reportTotalStats;
 
         try {
+            log.info("Running pipeline...");
             reportTotalStats = pipeline.run();
+            log.info("Pipeline finished. Generating report...");
             ReportFormatter reportFormatter = ReportFormatterFactory.create(arguments.reportFormat());
 
             String content = reportFormatter.format(reportTotalStats, resolvedSources);
@@ -75,6 +79,7 @@ public class LogProcessingOrchestrator {
             return;
         }
 
+        log.info("Report successfully generated!");
         exit(0);
     }
 }
