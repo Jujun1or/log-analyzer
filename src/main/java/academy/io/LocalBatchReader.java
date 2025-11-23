@@ -3,7 +3,6 @@ package academy.io;
 import academy.dto.Batch;
 import academy.dto.LogEntry;
 import academy.parse.LineParser;
-import lombok.AllArgsConstructor;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -15,13 +14,18 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-@AllArgsConstructor
 public class LocalBatchReader implements BatchReader {
     private final LineParser parser;
     private final Path path;
     private final Predicate<Instant> timeFilter;
     private final int batchSize;
 
+    public LocalBatchReader(LineParser parser, Path path, Predicate<Instant> timeFilter, int batchSize) {
+        this.parser = parser;
+        this.path = path;
+        this.timeFilter = timeFilter;
+        this.batchSize = batchSize;
+    }
 
     @Override
     public void readBatches(Consumer<Batch> batchConsumer) throws IOException {

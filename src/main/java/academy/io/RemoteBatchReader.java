@@ -3,7 +3,6 @@ package academy.io;
 import academy.dto.Batch;
 import academy.dto.LogEntry;
 import academy.parse.LineParser;
-import lombok.AllArgsConstructor;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,12 +18,18 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-@AllArgsConstructor
 public class RemoteBatchReader implements BatchReader {
     private final LineParser parser;
     private final URI uri;
     private final Predicate<Instant> timeFilter;
     private final int batchSize;
+
+    public RemoteBatchReader(LineParser parser, URI uri, Predicate<Instant> timeFilter, int batchSize) {
+        this.parser = parser;
+        this.uri = uri;
+        this.timeFilter = timeFilter;
+        this.batchSize = batchSize;
+    }
 
     @Override
     public void readBatches(Consumer<Batch> batchConsumer) throws IOException {
@@ -34,7 +39,7 @@ public class RemoteBatchReader implements BatchReader {
         try (HttpClient client = HttpClient.newHttpClient()) {
             HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
             int statusCode = response.statusCode();
-            if (statusCode == 404) {
+            if (statusCode >= 400 && statusCode < 500) {
                 throw new IOException("Remote resource not found: " + uri);
             }
             if (statusCode < 200 || statusCode >= 300) {
