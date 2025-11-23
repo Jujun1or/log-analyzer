@@ -106,6 +106,7 @@ public final class ArgumentsValidator {
         return false;
     }
 
+    @SuppressWarnings("PMD.EmptyCatchBlock")
     public static Instant parseInstantOrNull(String raw) {
         if (raw == null || raw.isBlank() || "null".equalsIgnoreCase(raw)) {
             return null;
@@ -114,6 +115,7 @@ public final class ArgumentsValidator {
         try {
             return Instant.parse(raw);
         } catch (DateTimeParseException ignore) {
+            // intentionally ignored, fallback to LocalDate parsing
         }
 
         try {
