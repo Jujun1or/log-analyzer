@@ -56,10 +56,6 @@ public final class ArgumentsValidator {
             }
 
             if (isUrl(p)) {
-                String lower = p.toLowerCase();
-                if (lower.contains(".") && !(lower.endsWith(".log") || lower.endsWith(".txt"))) {
-                    throw new IllegalArgumentException("Unsupported file format for URL: " + p);
-                }
                 continue;
             }
 
