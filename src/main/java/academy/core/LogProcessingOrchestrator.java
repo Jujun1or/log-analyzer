@@ -8,10 +8,13 @@ import academy.io.LogSourceResolver;
 import academy.io.RemoteBatchReader;
 import academy.parse.LineParser;
 import academy.parse.NginxLineParser;
+import academy.report.ReportFormatter;
+import academy.report.ReportFormatterFactory;
 import academy.stats.ReportTotalStats;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.time.Instant;
 import java.util.List;
 import java.util.function.Predicate;
@@ -21,7 +24,7 @@ public class LogProcessingOrchestrator {
     private static final Logger log = LogManager.getLogger(LogProcessingOrchestrator.class);
 
     public static void run(Arguments arguments){
-        List<ResolvedSource> resolvedSources = LogSourceResolver.resolve(arguments.paths());
+            List<ResolvedSource> resolvedSources = LogSourceResolver.resolve(arguments.paths());
         Instant from = arguments.from();
         Instant to = arguments.to();
 
@@ -39,7 +42,7 @@ public class LogProcessingOrchestrator {
             return true;
         };
 
-        PipelineConfig config = new PipelineConfig(100, 16,
+        PipelineConfig config = new PipelineConfig(1000, 16,
             Runtime.getRuntime().availableProcessors());
 
         Pipeline pipeline = new Pipeline(config);
@@ -57,7 +60,11 @@ public class LogProcessingOrchestrator {
 
         try {
             reportTotalStats = pipeline.run();
-            System.out.println(reportTotalStats);
+            ReportFormatter reportFormatter = ReportFormatterFactory.create(arguments.reportFormat());
+
+            String content = reportFormatter.format(reportTotalStats, resolvedSources);
+            Files.writeString(arguments.output(), content);
+
         } catch (IOException e) {
             log.error(e.getMessage());
             exit(2);
