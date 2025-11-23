@@ -8,6 +8,7 @@ import academy.dto.Arguments;
 import academy.enums.ReportFormat;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,6 +41,7 @@ public class Application implements Runnable {
     private String toRaw;
 
     public static void main(String[] args) {
+        args = correctArgs(args);
         int exitCode = new CommandLine(new Application()).execute(args);
         exit(exitCode);
     }
@@ -64,5 +66,16 @@ public class Application implements Runnable {
             log.error(e.getMessage());
             exit(1);
         }
+    }
+
+    private static String[] correctArgs(String[] args) {
+        int start = 0;
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].startsWith("-")) {
+                start = i;
+                break;
+            }
+        }
+        return Arrays.copyOfRange(args, start, args.length);
     }
 }
