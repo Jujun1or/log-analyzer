@@ -58,10 +58,28 @@ public final class LogSourceResolver {
             return;
         }
 
+        if (filePattern.contains("**")) {
+            try (var stream = Files.walk(dir)) {
+                PathMatcher matcher = dir.getFileSystem().getPathMatcher("glob:" + pattern);
+
+                stream.filter(Files::isRegularFile)
+                        .filter(LogSourceResolver::isSupportedLogOrTxt)
+                        .filter(p -> matcher.matches(p.normalize()))
+                        .forEach(p -> out.add(
+                                ResolvedSource.createLocal(p.toAbsolutePath().normalize())));
+
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Failed to expand glob: " + pattern, e);
+            }
+
+            return;
+        }
+
         PathMatcher matcher = dir.getFileSystem().getPathMatcher("glob:" + filePattern);
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
             for (Path entry : stream) {
+
                 if (Files.isDirectory(entry)) {
                     continue;
                 }
