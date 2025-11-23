@@ -11,8 +11,8 @@ import org.apache.logging.log4j.Logger;
 
 public class NginxLineParser implements LineParser {
     private static final Logger log = LogManager.getLogger(NginxLineParser.class);
-    private static final DateTimeFormatter TIME_FORMAT =
-        DateTimeFormatter.ofPattern("dd/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH)
+    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern(
+                    "dd/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH)
             .withZone(ZoneId.of("UTC"));
 
     @Override
@@ -36,7 +36,6 @@ public class NginxLineParser implements LineParser {
             return Optional.empty();
         }
     }
-
 
     private Instant extractTimestamp(String line) {
         int start = line.indexOf('[');
@@ -74,6 +73,6 @@ public class NginxLineParser implements LineParser {
         int status = Integer.parseInt(rest.substring(0, space1));
         int bodyBytes = Integer.parseInt(rest.substring(space1 + 1, space2));
 
-        return new int[]{status, bodyBytes};
+        return new int[] {status, bodyBytes};
     }
 }

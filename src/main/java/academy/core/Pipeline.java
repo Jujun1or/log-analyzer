@@ -37,11 +37,10 @@ public class Pipeline {
         ExecutorService consumerExecutor = Executors.newFixedThreadPool(config.numConsumers());
         List<Future<?>> consumerFutures = new ArrayList<>();
 
-        for (int i = 0; i < config.numConsumers(); i++){
+        for (int i = 0; i < config.numConsumers(); i++) {
             Future<?> future = consumerExecutor.submit(() -> consumerTask(processor, aggregator));
             consumerFutures.add(future);
         }
-
 
         ExecutorService producerExecutor = Executors.newVirtualThreadPerTaskExecutor();
         List<Future<Void>> futures = new ArrayList<>();
@@ -91,11 +90,10 @@ public class Pipeline {
 
         sendPoisonPills(config.numConsumers());
 
-        for (var future : consumerFutures){
+        for (var future : consumerFutures) {
             try {
                 future.get();
-            }
-            catch (Exception e){
+            } catch (Exception e) {
                 throw new RuntimeException("Processing failed: " + e);
             }
         }
@@ -104,7 +102,6 @@ public class Pipeline {
         consumerExecutor.shutdown();
 
         return aggregator.buildReport();
-
     }
 
     public void registerReader(BatchReader reader) {
@@ -131,11 +128,9 @@ public class Pipeline {
                 BatchStats stats = processor.process(batch);
                 aggregator.merge(stats);
             }
-        }
-        catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Processing interrupted: " + e);
         }
     }
-
 }

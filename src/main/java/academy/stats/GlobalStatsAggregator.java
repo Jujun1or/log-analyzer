@@ -18,7 +18,6 @@ public class GlobalStatsAggregator {
     private final Map<LocalDate, Long> requestsByDate = new HashMap<>();
     private final Set<String> uniqueProtocols = new HashSet<>();
 
-
     public synchronized void merge(BatchStats stats) {
         totalRequests += stats.totalRequests();
         totalBytes += stats.totalBytes();
@@ -46,27 +45,21 @@ public class GlobalStatsAggregator {
         Map<String, RequestDateInfo> dateDistribution = findRequestsByDateInPercents();
 
         return new ReportTotalStats(
-            totalRequests,
-            round2(avg),
-            maxBytes,
-            p95,
-            responseCodes,
-            top10Resources,
-            dateDistribution,
-            uniqueProtocols
-        );
+                totalRequests,
+                round2(avg),
+                maxBytes,
+                p95,
+                responseCodes,
+                top10Resources,
+                dateDistribution,
+                uniqueProtocols);
     }
 
     private Map<String, Long> get10MostPopularResources() {
         return resources.entrySet().stream()
-            .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
-            .limit(10)
-            .collect(Collectors.toMap(
-                Map.Entry::getKey,
-                Map.Entry::getValue,
-                (a, b) -> a,
-                LinkedHashMap::new
-            ));
+                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                .limit(10)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
     }
 
     private int find95Percentile() {
@@ -76,8 +69,7 @@ public class GlobalStatsAggregator {
 
         long cumulative = 0;
 
-        List<Map.Entry<Integer, Long>> sorted =
-            responseSizeFreq.entrySet().stream()
+        List<Map.Entry<Integer, Long>> sorted = responseSizeFreq.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .toList();
 
@@ -102,17 +94,14 @@ public class GlobalStatsAggregator {
             double percent = round2((count * 100.0) / totalRequests);
 
             result.put(
-                date.toString(),
-                new RequestDateInfo(date.toString(), date.getDayOfWeek().toString(), count, percent)
-            );
+                    date.toString(),
+                    new RequestDateInfo(date.toString(), date.getDayOfWeek().toString(), count, percent));
         }
 
         return result;
     }
 
     private double round2(double v) {
-        return BigDecimal.valueOf(v)
-            .setScale(2, RoundingMode.HALF_UP)
-            .doubleValue();
+        return BigDecimal.valueOf(v).setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
 }

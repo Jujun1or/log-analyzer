@@ -36,8 +36,8 @@ public class LocalBatchReader implements BatchReader {
 
             while ((line = reader.readLine()) != null) {
                 parser.parseLine(line)
-                    .filter(entry -> timeFilter.test(entry.timestamp()))
-                    .ifPresent(entry -> processEntry(entry, buffer, batchConsumer, batchSize));
+                        .filter(entry -> timeFilter.test(entry.timestamp()))
+                        .ifPresent(entry -> processEntry(entry, buffer, batchConsumer, batchSize));
             }
         }
 

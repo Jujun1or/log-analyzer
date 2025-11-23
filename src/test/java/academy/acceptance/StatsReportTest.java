@@ -1,44 +1,36 @@
 package academy.acceptance;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import academy.dto.ResolvedSource;
+import academy.report.AdocFormatter;
 import academy.report.JsonFormatter;
 import academy.report.MarkdownFormatter;
-import academy.report.AdocFormatter;
 import academy.stats.ReportTotalStats;
 import academy.stats.RequestDateInfo;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 public class StatsReportTest {
 
     private ReportTotalStats sampleStats() {
         return new ReportTotalStats(
-            3,
-            150.0,
-            300,
-            300,
-            Map.of(200, 1L, 404, 2L),
-            Map.of("/a", 2L, "/b", 1L),
-            Map.of(
-                "2025-01-01",
-                new RequestDateInfo("2025-01-01", "WEDNESDAY", 3, 100.0)
-            ),
-            Set.of("HTTP/1.1")
-        );
+                3,
+                150.0,
+                300,
+                300,
+                Map.of(200, 1L, 404, 2L),
+                Map.of("/a", 2L, "/b", 1L),
+                Map.of("2025-01-01", new RequestDateInfo("2025-01-01", "WEDNESDAY", 3, 100.0)),
+                Set.of("HTTP/1.1"));
     }
 
     private List<ResolvedSource> sampleFiles() {
-        return List.of(
-            ResolvedSource.createLocal(java.nio.file.Path.of("access.log"))
-        );
+        return List.of(ResolvedSource.createLocal(java.nio.file.Path.of("access.log")));
     }
-
 
     @Test
     @DisplayName("Сохранение статистики в формате JSON — полный тест")

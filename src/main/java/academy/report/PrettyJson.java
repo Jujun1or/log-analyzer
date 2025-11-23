@@ -8,8 +8,7 @@ public final class PrettyJson {
     public static final DefaultPrettyPrinter PRINTER;
 
     static {
-        DefaultPrettyPrinter.Indenter indenter =
-            new DefaultIndenter("    ", DefaultIndenter.SYS_LF);
+        DefaultPrettyPrinter.Indenter indenter = new DefaultIndenter("    ", DefaultIndenter.SYS_LF);
 
         DefaultPrettyPrinter printer = new DefaultPrettyPrinter();
 

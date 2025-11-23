@@ -1,16 +1,15 @@
 package academy;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import academy.core.LogProcessingOrchestrator;
 import academy.dto.Arguments;
 import academy.enums.ReportFormat;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 public class ApplicationTest {
 
@@ -19,21 +18,17 @@ public class ApplicationTest {
     void happyPathTest() throws Exception {
 
         Path log = Files.createTempFile("test-log", ".log");
-        Files.writeString(log, String.join("\n",
-            "93.180.71.3 - - [17/May/2015:08:05:32 +0000] \"GET /a HTTP/1.1\" 200 100",
-            "93.180.71.3 - - [17/May/2015:08:05:33 +0000] \"GET /b HTTP/1.1\" 404 300"
-        ));
+        Files.writeString(
+                log,
+                String.join(
+                        "\n",
+                        "93.180.71.3 - - [17/May/2015:08:05:32 +0000] \"GET /a HTTP/1.1\" 200 100",
+                        "93.180.71.3 - - [17/May/2015:08:05:33 +0000] \"GET /b HTTP/1.1\" 404 300"));
 
         Path out = log.getParent().resolve("report.json");
         Files.deleteIfExists(out);
 
-        Arguments args = new Arguments(
-            List.of(log.toString()),
-            ReportFormat.JSON,
-            out,
-            null,
-            null
-        );
+        Arguments args = new Arguments(List.of(log.toString()), ReportFormat.JSON, out, null, null);
 
         int exit = LogProcessingOrchestrator.run(args);
 

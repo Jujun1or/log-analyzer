@@ -6,9 +6,8 @@ import java.io.StringWriter;
 
 public final class JsonUtil {
 
-    private static final ObjectMapper mapper = new ObjectMapper()
-        .enable(SerializationFeature.INDENT_OUTPUT)
-        .findAndRegisterModules();
+    private static final ObjectMapper mapper =
+            new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).findAndRegisterModules();
 
     private JsonUtil() {}
 

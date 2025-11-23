@@ -1,7 +1,6 @@
 package academy.io;
 
 import academy.dto.ResolvedSource;
-
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.*;
@@ -53,7 +52,6 @@ public class LogSourceResolver {
         return resolvedSources;
     }
 
-
     private static List<Path> expandGlob(String directory, String pattern) {
         List<Path> result = new ArrayList<>();
 
@@ -87,13 +85,11 @@ public class LogSourceResolver {
         return result;
     }
 
-
     private static boolean isUri(String source) {
         return source.startsWith("http://") || source.startsWith("https://");
     }
 
     private static boolean isGlob(String source) {
-        return source.contains("*") || source.contains("?")
-            || source.contains("[") || source.contains("]");
+        return source.contains("*") || source.contains("?") || source.contains("[") || source.contains("]");
     }
 }

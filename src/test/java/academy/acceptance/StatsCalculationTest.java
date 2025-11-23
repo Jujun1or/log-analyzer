@@ -1,18 +1,17 @@
 package academy.acceptance;
 
+import static org.junit.jupiter.api.Assertions.*;
+
+import academy.core.BatchProcessor;
 import academy.dto.Batch;
 import academy.dto.LogEntry;
 import academy.stats.BatchStats;
-import academy.core.BatchProcessor;
 import academy.stats.GlobalStatsAggregator;
 import academy.stats.ReportTotalStats;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
 import java.time.Instant;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 
 public class StatsCalculationTest {
 
@@ -24,31 +23,13 @@ public class StatsCalculationTest {
         GlobalStatsAggregator aggregator = new GlobalStatsAggregator();
 
         LogEntry e1 = new LogEntry(
-            Instant.parse("2015-05-17T08:05:32Z"),
-            "GET",
-            "/downloads/product_1",
-            "HTTP/1.1",
-            200,
-            100
-        );
+                Instant.parse("2015-05-17T08:05:32Z"), "GET", "/downloads/product_1", "HTTP/1.1", 200, 100);
 
         LogEntry e2 = new LogEntry(
-            Instant.parse("2015-05-17T10:00:00Z"),
-            "GET",
-            "/downloads/product_1",
-            "HTTP/1.1",
-            404,
-            300
-        );
+                Instant.parse("2015-05-17T10:00:00Z"), "GET", "/downloads/product_1", "HTTP/1.1", 404, 300);
 
-        LogEntry e3 = new LogEntry(
-            Instant.parse("2015-05-18T09:00:00Z"),
-            "GET",
-            "/downloads/product_2",
-            "HTTP/1.1",
-            304,
-            50
-        );
+        LogEntry e3 =
+                new LogEntry(Instant.parse("2015-05-18T09:00:00Z"), "GET", "/downloads/product_2", "HTTP/1.1", 304, 50);
 
         Batch batch = new Batch(List.of(e1, e2, e3));
 

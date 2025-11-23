@@ -1,5 +1,7 @@
 package academy.acceptance;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import academy.dto.Batch;
 import academy.dto.LogEntry;
 import academy.io.LocalBatchReader;
@@ -7,10 +9,6 @@ import academy.io.RemoteBatchReader;
 import academy.parse.LineParser;
 import academy.parse.NginxLineParser;
 import com.sun.net.httpserver.HttpServer;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
-
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -21,18 +19,17 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class LogFileParsingTest {
 
-    private static final String VALID_LINE1 =
-        "93.180.71.3 - - [17/May/2015:08:05:32 +0000] " +
-            "\"GET /downloads/product_1 HTTP/1.1\" 304 0 \"-\" \"UA\"";
+    private static final String VALID_LINE1 = "93.180.71.3 - - [17/May/2015:08:05:32 +0000] "
+            + "\"GET /downloads/product_1 HTTP/1.1\" 304 0 \"-\" \"UA\"";
 
-    private static final String VALID_LINE2 =
-        "93.180.71.3 - - [18/May/2015:10:15:00 +0000] " +
-            "\"GET /downloads/product_2 HTTP/1.1\" 200 100 \"-\" \"UA\"";
+    private static final String VALID_LINE2 = "93.180.71.3 - - [18/May/2015:10:15:00 +0000] "
+            + "\"GET /downloads/product_2 HTTP/1.1\" 200 100 \"-\" \"UA\"";
 
     private static final String BROKEN_LINE = "this is not nginx";
 
@@ -48,19 +45,16 @@ public class LogFileParsingTest {
         LineParser parser = new NginxLineParser();
         Predicate<Instant> allowAll = i -> true;
 
-        LocalBatchReader reader =
-            new LocalBatchReader(parser, file, allowAll, 50);
+        LocalBatchReader reader = new LocalBatchReader(parser, file, allowAll, 50);
 
         List<Batch> batches = new ArrayList<>();
         reader.readBatches(batches::add);
 
-        List<LogEntry> entries = batches.stream()
-            .flatMap(b -> b.entries().stream())
-            .toList();
+        List<LogEntry> entries =
+                batches.stream().flatMap(b -> b.entries().stream()).toList();
 
         assertEquals(2, entries.size());
     }
-
 
     @Test
     @DisplayName("На вход передан валидный удаленный log-файл")
@@ -83,24 +77,22 @@ public class LogFileParsingTest {
         LineParser parser = new NginxLineParser();
         Predicate<Instant> allowAll = i -> true;
 
-        RemoteBatchReader reader =
-            new RemoteBatchReader(parser, uri, allowAll, 50);
+        RemoteBatchReader reader = new RemoteBatchReader(parser, uri, allowAll, 50);
 
         List<Batch> batches = new ArrayList<>();
         reader.readBatches(batches::add);
 
-        List<LogEntry> entries = batches.stream()
-            .flatMap(b -> b.entries().stream())
-            .toList();
+        List<LogEntry> entries =
+                batches.stream().flatMap(b -> b.entries().stream()).toList();
 
         server.stop(0);
 
         assertEquals(2, entries.size());
     }
 
-
     @Test
-    @DisplayName("На вход передан валидный локальный log-файл, часть строк в котором нужно отфильтровать по --from и --to")
+    @DisplayName(
+            "На вход передан валидный локальный log-файл, часть строк в котором нужно отфильтровать по --from и --to")
     void localFileProcessingAndFilteringTest() throws Exception {
         Path file = tempDir.resolve("filtered.log");
         Files.writeString(file, VALID_LINE1 + "\n" + VALID_LINE2);
@@ -108,24 +100,20 @@ public class LogFileParsingTest {
         LineParser parser = new NginxLineParser();
 
         Instant from = Instant.parse("2015-05-18T00:00:00Z");
-        Instant to   = Instant.parse("2015-05-19T00:00:00Z");
-        Predicate<Instant> filter =
-            ts -> !ts.isBefore(from) && ts.isBefore(to);
+        Instant to = Instant.parse("2015-05-19T00:00:00Z");
+        Predicate<Instant> filter = ts -> !ts.isBefore(from) && ts.isBefore(to);
 
-        LocalBatchReader reader =
-            new LocalBatchReader(parser, file, filter, 50);
+        LocalBatchReader reader = new LocalBatchReader(parser, file, filter, 50);
 
         List<Batch> batches = new ArrayList<>();
         reader.readBatches(batches::add);
 
-        List<LogEntry> entries = batches.stream()
-            .flatMap(b -> b.entries().stream())
-            .toList();
+        List<LogEntry> entries =
+                batches.stream().flatMap(b -> b.entries().stream()).toList();
 
         assertEquals(1, entries.size());
         assertEquals("/downloads/product_2", entries.get(0).resource());
     }
-
 
     // ============================================================
     @Test
@@ -137,15 +125,13 @@ public class LogFileParsingTest {
         LineParser parser = new NginxLineParser();
         Predicate<Instant> allowAll = i -> true;
 
-        LocalBatchReader reader =
-            new LocalBatchReader(parser, file, allowAll, 50);
+        LocalBatchReader reader = new LocalBatchReader(parser, file, allowAll, 50);
 
         List<Batch> batches = new ArrayList<>();
         reader.readBatches(batches::add);
 
-        List<LogEntry> entries = batches.stream()
-            .flatMap(b -> b.entries().stream())
-            .toList();
+        List<LogEntry> entries =
+                batches.stream().flatMap(b -> b.entries().stream()).toList();
 
         assertEquals(2, entries.size());
     }

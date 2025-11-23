@@ -1,7 +1,7 @@
-    package academy.enums;
+package academy.enums;
 
-    public enum ReportFormat {
-        JSON,
-        MARKDOWN,
-        ADOC;
-    }
+public enum ReportFormat {
+    JSON,
+    MARKDOWN,
+    ADOC;
+}

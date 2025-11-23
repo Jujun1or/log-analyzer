@@ -3,7 +3,6 @@ package academy.core;
 import academy.dto.Batch;
 import academy.dto.LogEntry;
 import academy.stats.BatchStats;
-
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.HashMap;
@@ -41,15 +40,14 @@ public class BatchProcessor {
         }
 
         return new BatchStats(
-            totalRequests,
-            totalBytes,
-            maxBytes,
-            responseSizeFreq,
-            responseCode,
-            resources,
-            requestsByDate,
-            uniqueProtocols
-        );
+                totalRequests,
+                totalBytes,
+                maxBytes,
+                responseSizeFreq,
+                responseCode,
+                resources,
+                requestsByDate,
+                uniqueProtocols);
     }
 
     private <K> void updateFrequency(Map<K, Long> map, K key) {

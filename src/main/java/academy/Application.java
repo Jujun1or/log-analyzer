@@ -1,30 +1,36 @@
 package academy;
 
+import static java.lang.System.exit;
+
 import academy.cli.ArgumentsValidator;
 import academy.core.LogProcessingOrchestrator;
 import academy.dto.Arguments;
 import academy.enums.ReportFormat;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
-import java.nio.file.Path;
-import java.time.Instant;
-import java.util.List;
-import static java.lang.System.exit;
 
 @Command(name = "Log Analyzer", version = "Example 1.0", mixinStandardHelpOptions = true)
 public class Application implements Runnable {
 
     private static final Logger log = LogManager.getLogger(LogProcessingOrchestrator.class);
 
-    @CommandLine.Option(names = {"--path", "-p"}, required = true, arity = "1..*")
+    @CommandLine.Option(
+            names = {"--path", "-p"},
+            required = true,
+            arity = "1..*")
     private List<String> paths;
 
     @CommandLine.Option(names = {"--format", "-f"})
     private String formatRaw;
 
-    @CommandLine.Option(names = {"--output", "-o"}, required = true)
+    @CommandLine.Option(
+            names = {"--output", "-o"},
+            required = true)
     private Path outputFile;
 
     @CommandLine.Option(names = "--from")

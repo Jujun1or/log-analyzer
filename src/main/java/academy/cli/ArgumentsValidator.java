@@ -11,11 +11,9 @@ import java.util.List;
 
 public final class ArgumentsValidator {
 
-    private ArgumentsValidator() {
-    }
+    private ArgumentsValidator() {}
 
-    public static void validate(List<String> paths, String formatRaw, Path output,
-                                String fromRaw, String toRaw) {
+    public static void validate(List<String> paths, String formatRaw, Path output, String fromRaw, String toRaw) {
         validatePaths(paths);
 
         if (!isSupportedFormat(formatRaw)) {
@@ -115,7 +113,8 @@ public final class ArgumentsValidator {
 
         try {
             return Instant.parse(raw);
-        } catch (DateTimeParseException ignore) {}
+        } catch (DateTimeParseException ignore) {
+        }
 
         try {
             LocalDate date = LocalDate.parse(raw);

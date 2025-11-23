@@ -47,14 +47,13 @@ public class RemoteBatchReader implements BatchReader {
             }
 
             try (InputStream body = response.body();
-                 BufferedReader reader = new BufferedReader(new InputStreamReader(body, StandardCharsets.UTF_8))) {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(body, StandardCharsets.UTF_8))) {
 
                 String line;
-                while ((line = reader.readLine()) != null){
+                while ((line = reader.readLine()) != null) {
                     parser.parseLine(line)
-                        .filter(entry -> timeFilter.test(entry.timestamp()))
-                        .ifPresent(entry -> processEntry(entry, buffer, batchConsumer, batchSize));
-
+                            .filter(entry -> timeFilter.test(entry.timestamp()))
+                            .ifPresent(entry -> processEntry(entry, buffer, batchConsumer, batchSize));
                 }
             }
             flush(buffer, batchConsumer);
@@ -63,6 +62,5 @@ public class RemoteBatchReader implements BatchReader {
             Thread.currentThread().interrupt();
             throw new IOException("Thread interrupted while reading remote resource: " + uri, e);
         }
-
     }
 }

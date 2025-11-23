@@ -11,18 +11,18 @@ import academy.parse.NginxLineParser;
 import academy.report.ReportFormatter;
 import academy.report.ReportFormatterFactory;
 import academy.stats.ReportTotalStats;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.time.Instant;
 import java.util.List;
 import java.util.function.Predicate;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class LogProcessingOrchestrator {
     private static final Logger log = LogManager.getLogger(LogProcessingOrchestrator.class);
 
-    public static int run(Arguments arguments){
+    public static int run(Arguments arguments) {
         log.info("Starting log analysis");
         List<ResolvedSource> resolvedSources = LogSourceResolver.resolve(arguments.paths());
         log.info("Total resolved sources: {}", resolvedSources.size());
@@ -43,16 +43,16 @@ public class LogProcessingOrchestrator {
             return true;
         };
 
-        PipelineConfig config = new PipelineConfig(1000, 16,
-            Runtime.getRuntime().availableProcessors());
+        PipelineConfig config =
+                new PipelineConfig(1000, 16, Runtime.getRuntime().availableProcessors());
 
         Pipeline pipeline = new Pipeline(config);
 
         LineParser parser = new NginxLineParser();
-        for (var source : resolvedSources){
+        for (var source : resolvedSources) {
             BatchReader reader = source.remote()
-                ? new RemoteBatchReader(parser, source.uri(), timeFilter, config.batchSize())
-                : new LocalBatchReader(parser, source.path(), timeFilter, config.batchSize());
+                    ? new RemoteBatchReader(parser, source.uri(), timeFilter, config.batchSize())
+                    : new LocalBatchReader(parser, source.path(), timeFilter, config.batchSize());
 
             pipeline.registerReader(reader);
         }
