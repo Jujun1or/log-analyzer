@@ -18,12 +18,11 @@ import java.nio.file.Files;
 import java.time.Instant;
 import java.util.List;
 import java.util.function.Predicate;
-import static java.lang.System.exit;
 
 public class LogProcessingOrchestrator {
     private static final Logger log = LogManager.getLogger(LogProcessingOrchestrator.class);
 
-    public static void run(Arguments arguments){
+    public static int run(Arguments arguments){
         log.info("Starting log analysis");
         List<ResolvedSource> resolvedSources = LogSourceResolver.resolve(arguments.paths());
         log.info("Total resolved sources: {}", resolvedSources.size());
@@ -71,15 +70,13 @@ public class LogProcessingOrchestrator {
 
         } catch (IOException e) {
             log.error(e.getMessage());
-            exit(2);
-            return;
+            return 2;
         } catch (Exception e) {
             log.error(e.getMessage());
-            exit(1);
-            return;
+            return 1;
         }
 
         log.info("Report successfully generated!");
-        exit(0);
+        return 0;
     }
 }

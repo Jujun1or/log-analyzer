@@ -11,6 +11,7 @@ import picocli.CommandLine.Command;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
+import static java.lang.System.exit;
 
 @Command(name = "Log Analyzer", version = "Example 1.0", mixinStandardHelpOptions = true)
 public class Application implements Runnable {
@@ -34,7 +35,7 @@ public class Application implements Runnable {
 
     public static void main(String[] args) {
         int exitCode = new CommandLine(new Application()).execute(args);
-        System.exit(exitCode);
+        exit(exitCode);
     }
 
     @Override
@@ -47,14 +48,15 @@ public class Application implements Runnable {
             Instant to = ArgumentsValidator.parseInstantOrNull(toRaw);
 
             Arguments args = new Arguments(paths, reportFormat, outputFile, from, to);
-            LogProcessingOrchestrator.run(args);
+            int exitCode = LogProcessingOrchestrator.run(args);
+            exit(exitCode);
 
         } catch (IllegalArgumentException e) {
             log.error(e.getMessage());
-            System.exit(2);
+            exit(2);
         } catch (Exception e) {
             log.error(e.getMessage());
-            System.exit(1);
+            exit(1);
         }
     }
 }
