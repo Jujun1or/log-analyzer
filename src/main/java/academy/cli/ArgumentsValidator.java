@@ -67,6 +67,10 @@ public final class ArgumentsValidator {
                 continue;
             }
 
+            if (!Files.exists(Path.of(p))) {
+                throw new IllegalArgumentException("Output file already exists: " + p);
+            }
+
             String lower = p.toLowerCase();
             if (!(lower.endsWith(".log") || lower.endsWith(".txt"))) {
                 throw new IllegalArgumentException("Unsupported file format: " + p);
@@ -105,7 +109,7 @@ public final class ArgumentsValidator {
     }
 
     public static Instant parseInstantOrNull(String raw) {
-        if (raw == null || raw.isBlank()) {
+        if (raw == null || raw.isBlank() || "null".equalsIgnoreCase(raw)) {
             return null;
         }
 
