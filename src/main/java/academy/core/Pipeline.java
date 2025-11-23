@@ -77,6 +77,11 @@ public class Pipeline {
 
             Throwable cause = e.getCause();
 
+            sendPoisonPills(config.numConsumers());
+
+            producerExecutor.shutdownNow();
+            consumerExecutor.shutdownNow();
+
             if (cause instanceof IOException) {
                 throw new IOException("Log file reading failed: " + cause);
             }
