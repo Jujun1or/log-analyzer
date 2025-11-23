@@ -2,6 +2,9 @@ package academy.core;
 
 import academy.dto.Batch;
 import academy.io.BatchReader;
+import academy.stats.BatchStats;
+import academy.stats.GlobalStatsAggregator;
+import academy.stats.ReportTotalStats;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +22,27 @@ public class Pipeline {
     private BlockingQueue<Batch> queue;
     private final List<BatchReader> readers = new ArrayList<>();
 
+    private static final Batch POISON_PILL = new Batch(null);
+
     public Pipeline(PipelineConfig config) {
         this.config = config;
     }
 
-    public void run() throws IOException, RuntimeException {
+    public ReportTotalStats run() throws IOException, RuntimeException {
         queue = new ArrayBlockingQueue<>(config.queueCapacity());
+
+        GlobalStatsAggregator aggregator = new GlobalStatsAggregator();
+        BatchProcessor processor = new BatchProcessor();
+
+        ExecutorService consumerExecutor = Executors.newFixedThreadPool(config.numConsumers());
+        List<Future<?>> consumerFutures = new ArrayList<>();
+
+        for (int i = 0; i < config.numConsumers(); i++){
+            Future<?> future = consumerExecutor.submit(() -> consumerTask(processor, aggregator));
+            consumerFutures.add(future);
+        }
+
+
         ExecutorService producerExecutor = Executors.newVirtualThreadPerTaskExecutor();
         List<Future<Void>> futures = new ArrayList<>();
 
@@ -33,7 +51,7 @@ public class Pipeline {
                 queue.put(batch);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new RuntimeException("Interrupted while enqueueing batch", e);
+                throw new RuntimeException("Interrupted while enqueueing batch: " + e);
             }
         };
 
@@ -52,23 +70,67 @@ public class Pipeline {
             }
 
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt(); // восстановить флаг
-            throw new IOException("Interrupted while waiting for producers", e);
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while waiting for producers: " + e);
 
         } catch (ExecutionException e) {
 
             Throwable cause = e.getCause();
 
             if (cause instanceof IOException) {
-                throw new IOException("Log file reading failed: ", cause);
+                throw new IOException("Log file reading failed: " + cause);
             }
 
-            throw new RuntimeException("Producer failed", cause);
+            throw new RuntimeException("Producer failed: " + cause);
         }
+
+        sendPoisonPills(config.numConsumers());
+
+        for (var future : consumerFutures){
+            try {
+                future.get();
+            }
+            catch (Exception e){
+                throw new RuntimeException("Processing failed: " + e);
+            }
+        }
+
+        producerExecutor.shutdown();
+        consumerExecutor.shutdown();
+
+        return aggregator.buildReport();
 
     }
 
     public void registerReader(BatchReader reader) {
         readers.add(reader);
     }
+
+    private void sendPoisonPills(int count) {
+        for (int i = 0; i < count; i++) {
+            try {
+                queue.put(POISON_PILL);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException("Interrupted while sending poison pill: " + e);
+            }
+        }
+    }
+
+    private void consumerTask(BatchProcessor processor, GlobalStatsAggregator aggregator) {
+        try {
+            while (true) {
+                Batch batch = queue.take();
+                if (batch == POISON_PILL) break;
+
+                BatchStats stats = processor.process(batch);
+                aggregator.merge(stats);
+            }
+        }
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("Processing interrupted: " + e);
+        }
+    }
+
 }

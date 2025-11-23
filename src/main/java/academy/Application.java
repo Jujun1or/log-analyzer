@@ -1,6 +1,7 @@
 package academy;
 
 import academy.cli.ArgumentsValidator;
+import academy.core.LogProcessingOrchestrator;
 import academy.dto.Arguments;
 import academy.enums.ReportFormat;
 import picocli.CommandLine;
@@ -39,16 +40,15 @@ public class Application implements Runnable {
 
             ReportFormat reportFormat = ReportFormat.valueOf(formatRaw.toUpperCase());
             Instant from = ArgumentsValidator.parseInstantOrNull(fromRaw);
-            Instant to   = ArgumentsValidator.parseInstantOrNull(toRaw);
+            Instant to = ArgumentsValidator.parseInstantOrNull(toRaw);
 
             Arguments args = new Arguments(paths, reportFormat, outputFile, from, to);
-            System.out.println(args);
+            LogProcessingOrchestrator.run(args);
 
-
-        } catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             System.err.println(e.getMessage());
             System.exit(2);
-        } catch (Exception e){
+        } catch (Exception e) {
             System.err.println(e.getMessage());
             System.exit(1);
         }
