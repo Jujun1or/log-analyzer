@@ -37,7 +37,7 @@ public class GlobalStatsAggregator {
         }
     }
 
-    public ReportTotalStats buildReport() {
+    public synchronized ReportTotalStats buildReport() {
 
         Map<String, Long> top10Resources = get10MostPopularResources();
         int p95 = find95Percentile();
@@ -91,7 +91,7 @@ public class GlobalStatsAggregator {
         for (var entry : requestsByDate.entrySet()) {
             LocalDate date = entry.getKey();
             long count = entry.getValue();
-            double percent = round2((count * 100.0) / totalRequests);
+            double percent = round2(count * 100.0 / totalRequests);
 
             result.put(
                     date.toString(),

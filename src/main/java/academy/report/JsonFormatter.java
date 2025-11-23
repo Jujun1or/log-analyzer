@@ -17,7 +17,7 @@ public class JsonFormatter implements ReportFormatter {
         }
     }
 
-    public static record JsonReport(
+    public record JsonReport(
             List<String> files,
             @JsonProperty("totalRequestsCount") long totalRequests,
             @JsonProperty("responseSizeInBytes") ResponseSize responseSize,
@@ -49,12 +49,11 @@ public class JsonFormatter implements ReportFormatter {
         }
     }
 
-    public static record ResponseSize(long average, long max, long p95) {}
+    public record ResponseSize(long average, long max, long p95) {}
 
-    public static record ResourceItem(String resource, long totalRequestsCount) {}
+    public record ResourceItem(String resource, long totalRequestsCount) {}
 
-    public static record CodeItem(int code, long totalResponsesCount) {}
+    public record CodeItem(int code, long totalResponsesCount) {}
 
-    public static record DateItem(
-            String date, String weekday, long totalRequestsCount, double totalRequestsPercentage) {}
+    public record DateItem(String date, String weekday, long totalRequestsCount, double totalRequestsPercentage) {}
 }

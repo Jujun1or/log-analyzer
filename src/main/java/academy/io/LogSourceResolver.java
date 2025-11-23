@@ -6,43 +6,31 @@ import java.net.URI;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
-public class LogSourceResolver {
+public final class LogSourceResolver {
+
+    private LogSourceResolver() {}
 
     public static List<ResolvedSource> resolve(List<String> sources) {
         List<ResolvedSource> resolvedSources = new ArrayList<>();
 
+        if (sources == null || sources.isEmpty()) {
+            throw new IllegalArgumentException("No --path provided");
+        }
+
         for (String source : sources) {
+            if (source == null || source.isBlank()) {
+                throw new IllegalArgumentException("Empty --path value");
+            }
 
             if (isUri(source)) {
                 resolvedSources.add(ResolvedSource.createRemote(URI.create(source)));
-                continue;
+            } else if (isGlob(source)) {
+                expandGlob(source, resolvedSources);
+            } else {
+                resolvedSources.add(ResolvedSource.createLocal(Path.of(source)));
             }
-
-            if (isGlob(source)) {
-                int lastSlashIndex = source.lastIndexOf('/');
-
-                String directory;
-                String pattern;
-
-                if (lastSlashIndex != -1) {
-                    directory = source.substring(0, lastSlashIndex);
-                    pattern = source.substring(lastSlashIndex + 1);
-                } else {
-                    directory = ".";
-                    pattern = source;
-                }
-
-                List<Path> matches = expandGlob(directory, pattern);
-                for (Path p : matches) {
-                    resolvedSources.add(ResolvedSource.createLocal(p));
-                }
-
-                continue;
-            }
-
-            Path p = Path.of(source);
-            resolvedSources.add(ResolvedSource.createLocal(p));
         }
 
         if (resolvedSources.isEmpty()) {
@@ -52,37 +40,57 @@ public class LogSourceResolver {
         return resolvedSources;
     }
 
-    private static List<Path> expandGlob(String directory, String pattern) {
-        List<Path> result = new ArrayList<>();
+    private static void expandGlob(String pattern, List<ResolvedSource> out) {
+        int lastSlash = pattern.lastIndexOf('/');
+        Path dir;
+        String filePattern;
 
-        Path dir = directory.isBlank() ? Path.of(".") : Path.of(directory);
-        if (!Files.exists(dir) || !Files.isDirectory(dir)) {
-            throw new IllegalArgumentException("Directory does not exist: " + directory);
+        if (lastSlash >= 0) {
+            String dirPart = pattern.substring(0, lastSlash);
+            filePattern = pattern.substring(lastSlash + 1);
+            dir = dirPart.isEmpty() ? Path.of(".") : Path.of(dirPart);
+        } else {
+            dir = Path.of(".");
+            filePattern = pattern;
         }
 
-        PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
+        if (!Files.isDirectory(dir)) {
+            return;
+        }
+
+        PathMatcher matcher = dir.getFileSystem().getPathMatcher("glob:" + filePattern);
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
             for (Path entry : stream) {
-                if (!matcher.matches(entry.getFileName())) {
-                    continue;
-                }
-
                 if (Files.isDirectory(entry)) {
                     continue;
                 }
 
-                String name = entry.getFileName().toString().toLowerCase();
+                if (!isSupportedLogOrTxt(entry)) {
+                    continue;
+                }
 
-                if (name.endsWith(".log") || name.endsWith(".txt")) {
-                    result.add(entry.toAbsolutePath());
+                if (matcher.matches(entry.getFileName())) {
+                    out.add(ResolvedSource.createLocal(entry.toAbsolutePath().normalize()));
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException("Failed to process glob: " + directory + "/" + pattern, e);
+            throw new IllegalArgumentException("Failed to expand glob: " + pattern, e);
+        }
+    }
+
+    private static boolean isSupportedLogOrTxt(Path path) {
+        if (path == null) {
+            return false;
         }
 
-        return result;
+        Path fileName = path.getFileName();
+        if (fileName == null) {
+            return false;
+        }
+
+        String lower = fileName.toString().toLowerCase(Locale.ROOT);
+        return lower.endsWith(".log") || lower.endsWith(".txt");
     }
 
     private static boolean isUri(String source) {
