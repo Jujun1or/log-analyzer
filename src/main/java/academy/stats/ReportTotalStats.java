@@ -1,7 +1,7 @@
 package academy.stats;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public record ReportTotalStats(
         long totalRequests,
@@ -11,4 +11,4 @@ public record ReportTotalStats(
         Map<Integer, Long> responseCodes,
         Map<String, Long> mostPopular10Resources,
         Map<String, RequestDateInfo> requestsByDateInPercents,
-        Set<String> uniqueProtocols) {}
+        List<String> uniqueProtocols) {}

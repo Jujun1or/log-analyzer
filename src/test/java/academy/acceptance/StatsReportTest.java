@@ -10,7 +10,6 @@ import academy.stats.ReportTotalStats;
 import academy.stats.RequestDateInfo;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +24,7 @@ public class StatsReportTest {
                 Map.of(200, 1L, 404, 2L),
                 Map.of("/a", 2L, "/b", 1L),
                 Map.of("2025-01-01", new RequestDateInfo("2025-01-01", "WEDNESDAY", 3, 100.0)),
-                Set.of("HTTP/1.1"));
+                List.of("HTTP/1.1"));
     }
 
     private List<ResolvedSource> sampleFiles() {

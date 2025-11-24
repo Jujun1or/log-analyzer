@@ -53,7 +53,7 @@ public class GlobalStatsAggregator {
                 responseCodes,
                 top10Resources,
                 dateDistribution,
-                uniqueProtocols);
+                uniqueProtocols.stream().sorted().toList());
     }
 
     private Map<String, Long> get10MostPopularResources() {
@@ -114,7 +114,7 @@ public class GlobalStatsAggregator {
 
         if (totalRequests == 0) return result;
 
-        for (var entry : requestsByDate.entrySet()) {
+        requestsByDate.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach(entry -> {
             LocalDate date = entry.getKey();
             long count = entry.getValue();
             double percent = round2(count * 100.0 / totalRequests);
@@ -126,7 +126,7 @@ public class GlobalStatsAggregator {
                             date.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH),
                             count,
                             percent));
-        }
+        });
 
         return result;
     }
