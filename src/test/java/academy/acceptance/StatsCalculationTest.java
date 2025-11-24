@@ -41,7 +41,7 @@ public class StatsCalculationTest {
         assertEquals(300, report.maxResponseSize());
         assertEquals(150, report.averageResponseSize());
 
-        assertEquals(300, report.percentile95());
+        assertEquals(280, report.percentile95());
 
         assertEquals(2, report.mostPopular10Resources().size());
         assertEquals(2, report.mostPopular10Resources().get("/downloads/product_1"));

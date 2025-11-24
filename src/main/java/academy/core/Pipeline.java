@@ -5,7 +5,6 @@ import academy.io.BatchReader;
 import academy.stats.BatchStats;
 import academy.stats.GlobalStatsAggregator;
 import academy.stats.ReportTotalStats;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,9 +48,8 @@ public class Pipeline {
         readers.add(reader);
     }
 
-    private List<Future<?>> startConsumers(ExecutorService executor,
-                                           BatchProcessor processor,
-                                           GlobalStatsAggregator aggregator) {
+    private List<Future<?>> startConsumers(
+            ExecutorService executor, BatchProcessor processor, GlobalStatsAggregator aggregator) {
         List<Future<?>> futures = new ArrayList<>();
         for (int i = 0; i < config.numConsumers(); i++) {
             futures.add(executor.submit(() -> consumerTask(processor, aggregator)));
@@ -84,9 +82,9 @@ public class Pipeline {
         };
     }
 
-    private void waitForProducers(List<Future<Void>> futures,
-                                  ExecutorService consumerExecutor,
-                                  ExecutorService producerExecutor) throws IOException {
+    private void waitForProducers(
+            List<Future<Void>> futures, ExecutorService consumerExecutor, ExecutorService producerExecutor)
+            throws IOException {
         try {
             for (Future<Void> f : futures) {
                 f.get();

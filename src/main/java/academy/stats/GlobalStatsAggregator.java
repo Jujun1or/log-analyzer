@@ -3,6 +3,7 @@ package academy.stats;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.format.TextStyle;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,7 +41,7 @@ public class GlobalStatsAggregator {
     public synchronized ReportTotalStats buildReport() {
 
         Map<String, Long> top10Resources = get10MostPopularResources();
-        int p95 = find95Percentile();
+        double p95 = find95Percentile();
         double avg = totalRequests == 0 ? 0 : (double) totalBytes / totalRequests;
         Map<String, RequestDateInfo> dateDistribution = findRequestsByDateInPercents();
 
@@ -62,25 +63,50 @@ public class GlobalStatsAggregator {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> a, LinkedHashMap::new));
     }
 
-    private int find95Percentile() {
-        if (totalRequests == 0) return 0;
+    private double find95Percentile() {
+        if (totalRequests == 0) {
+            return 0;
+        }
 
-        long threshold = (long) Math.ceil(totalRequests * 0.95);
+        double p = 0.95;
+        long n = totalRequests;
 
-        long cumulative = 0;
+        double pos = 1 + (n - 1) * p;
+        long lowerRank = (long) Math.floor(pos);
+        long upperRank = (long) Math.ceil(pos);
 
         List<Map.Entry<Integer, Long>> sorted = responseSizeFreq.entrySet().stream()
                 .sorted(Map.Entry.comparingByKey())
                 .toList();
 
+        long cumulative = 0;
+        Integer lowerVal = null;
+        Integer upperVal = null;
+
         for (var entry : sorted) {
             cumulative += entry.getValue();
-            if (cumulative >= threshold) {
-                return entry.getKey();
+
+            if (lowerVal == null && cumulative >= lowerRank) {
+                lowerVal = entry.getKey();
+            }
+            if (cumulative >= upperRank) {
+                upperVal = entry.getKey();
+                break;
             }
         }
 
-        return maxBytes;
+        if (lowerVal == null || upperVal == null) {
+            return maxBytes;
+        }
+
+        if (lowerRank == upperRank || lowerVal.equals(upperVal)) {
+            return lowerVal;
+        }
+
+        double fraction = (pos - lowerRank) / (upperRank - lowerRank);
+        double interpolated = round2(lowerVal + fraction * (upperVal - lowerVal));
+
+        return interpolated;
     }
 
     private Map<String, RequestDateInfo> findRequestsByDateInPercents() {
@@ -95,7 +121,11 @@ public class GlobalStatsAggregator {
 
             result.put(
                     date.toString(),
-                    new RequestDateInfo(date.toString(), date.getDayOfWeek().toString(), count, percent));
+                    new RequestDateInfo(
+                            date.toString(),
+                            date.getDayOfWeek().getDisplayName(TextStyle.FULL, Locale.ENGLISH),
+                            count,
+                            percent));
         }
 
         return result;

@@ -98,7 +98,7 @@ public class StatsReportTest {
         assertTrue(out.contains("`access.log`"));
         assertTrue(out.contains("| Количество запросов | 3 |"));
         assertTrue(out.contains("| Средний размер ответа | 150.0b |"));
-        assertTrue(out.contains("| 95p размера ответа | 300b |"));
+        assertTrue(out.contains("| 95p размера ответа | 300.0b |"));
 
         assertTrue(out.contains("| /a | 2 |"));
         assertTrue(out.contains("| /b | 1 |"));
@@ -125,8 +125,8 @@ public class StatsReportTest {
         assertTrue(out.contains("|Файл(-ы) |access.log"));
         assertTrue(out.contains("|Количество запросов |3"));
         assertTrue(out.contains("|Средний размер ответа |150.0b"));
-        assertTrue(out.contains("|Максимальный размер ответа |300b"));
-        assertTrue(out.contains("|95-й перцентиль |300b"));
+        assertTrue(out.contains("|Максимальный размер ответа |300.0b"));
+        assertTrue(out.contains("|95-й перцентиль |300.0b"));
 
         assertTrue(out.contains("|/a | 2"));
         assertTrue(out.contains("|/b | 1"));
