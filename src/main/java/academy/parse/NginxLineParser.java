@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 public class NginxLineParser implements LineParser {
     private static final Logger log = LogManager.getLogger(NginxLineParser.class);
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern(
-                    "dd/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH)
+                    "d/MMM/yyyy:HH:mm:ss Z", Locale.ENGLISH)
             .withZone(ZoneId.of("UTC"));
 
     @Override
