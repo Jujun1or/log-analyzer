@@ -5,16 +5,11 @@ import academy.io.BatchReader;
 import academy.stats.BatchStats;
 import academy.stats.GlobalStatsAggregator;
 import academy.stats.ReportTotalStats;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 
 public class Pipeline {
@@ -28,24 +23,58 @@ public class Pipeline {
         this.config = config;
     }
 
-    public ReportTotalStats run() throws IOException, RuntimeException {
+    public ReportTotalStats run() throws IOException {
         queue = new ArrayBlockingQueue<>(config.queueCapacity());
 
         GlobalStatsAggregator aggregator = new GlobalStatsAggregator();
         BatchProcessor processor = new BatchProcessor();
 
         ExecutorService consumerExecutor = Executors.newFixedThreadPool(config.numConsumers());
-        List<Future<?>> consumerFutures = new ArrayList<>();
-
-        for (int i = 0; i < config.numConsumers(); i++) {
-            Future<?> future = consumerExecutor.submit(() -> consumerTask(processor, aggregator));
-            consumerFutures.add(future);
-        }
+        List<Future<?>> consumerFutures = startConsumers(consumerExecutor, processor, aggregator);
 
         ExecutorService producerExecutor = Executors.newVirtualThreadPerTaskExecutor();
-        List<Future<Void>> futures = new ArrayList<>();
+        List<Future<Void>> producerFutures = startProducers(producerExecutor);
 
-        Consumer<Batch> enqueue = batch -> {
+        waitForProducers(producerFutures, consumerExecutor, producerExecutor);
+
+        sendPoisonPills(config.numConsumers());
+        waitForConsumers(consumerFutures);
+
+        shutdownExecutors(producerExecutor, consumerExecutor);
+
+        return aggregator.buildReport();
+    }
+
+    public void registerReader(BatchReader reader) {
+        readers.add(reader);
+    }
+
+    private List<Future<?>> startConsumers(ExecutorService executor,
+                                           BatchProcessor processor,
+                                           GlobalStatsAggregator aggregator) {
+        List<Future<?>> futures = new ArrayList<>();
+        for (int i = 0; i < config.numConsumers(); i++) {
+            futures.add(executor.submit(() -> consumerTask(processor, aggregator)));
+        }
+        return futures;
+    }
+
+    private List<Future<Void>> startProducers(ExecutorService executor) {
+        List<Future<Void>> futures = new ArrayList<>();
+        Consumer<Batch> enqueue = createEnqueueConsumer();
+
+        for (BatchReader reader : readers) {
+            Callable<Void> task = () -> {
+                reader.readBatches(enqueue);
+                return null;
+            };
+            futures.add(executor.submit(task));
+        }
+        return futures;
+    }
+
+    private Consumer<Batch> createEnqueueConsumer() {
+        return batch -> {
             try {
                 queue.put(batch);
             } catch (InterruptedException e) {
@@ -53,59 +82,44 @@ public class Pipeline {
                 throw new RuntimeException("Interrupted while enqueueing batch: " + e);
             }
         };
+    }
 
-        for (BatchReader reader : readers) {
-            Callable<Void> task = () -> {
-                reader.readBatches(enqueue);
-                return null;
-            };
-
-            futures.add(producerExecutor.submit(task));
-        }
-
+    private void waitForProducers(List<Future<Void>> futures,
+                                  ExecutorService consumerExecutor,
+                                  ExecutorService producerExecutor) throws IOException {
         try {
             for (Future<Void> f : futures) {
                 f.get();
             }
-
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IOException("Interrupted while waiting for producers: " + e);
-
         } catch (ExecutionException e) {
-
             Throwable cause = e.getCause();
 
             sendPoisonPills(config.numConsumers());
-
-            producerExecutor.shutdownNow();
-            consumerExecutor.shutdownNow();
+            shutdownExecutors(producerExecutor, consumerExecutor);
 
             if (cause instanceof IOException) {
                 throw new IOException("Log file reading failed: " + cause);
             }
-
             throw new RuntimeException("Producer failed: " + cause);
         }
+    }
 
-        sendPoisonPills(config.numConsumers());
-
-        for (var future : consumerFutures) {
+    private void waitForConsumers(List<Future<?>> consumerFutures) {
+        for (Future<?> f : consumerFutures) {
             try {
-                future.get();
+                f.get();
             } catch (Exception e) {
                 throw new RuntimeException("Processing failed: " + e);
             }
         }
-
-        producerExecutor.shutdown();
-        consumerExecutor.shutdown();
-
-        return aggregator.buildReport();
     }
 
-    public void registerReader(BatchReader reader) {
-        readers.add(reader);
+    private void shutdownExecutors(ExecutorService producers, ExecutorService consumers) {
+        producers.shutdown();
+        consumers.shutdown();
     }
 
     private void sendPoisonPills(int count) {
