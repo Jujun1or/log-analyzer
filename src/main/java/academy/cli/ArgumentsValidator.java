@@ -66,7 +66,7 @@ public final class ArgumentsValidator {
             }
 
             if (!Files.exists(Path.of(p))) {
-                throw new IllegalArgumentException("Output file already exists: " + p);
+                throw new IllegalArgumentException("Input file not found: " + p);
             }
 
             String lower = p.toLowerCase();

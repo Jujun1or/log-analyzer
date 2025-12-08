@@ -64,7 +64,7 @@ public final class LogSourceResolver {
 
                 stream.filter(Files::isRegularFile)
                         .filter(LogSourceResolver::isSupportedLogOrTxt)
-                        .filter(p -> matcher.matches(p.normalize()))
+                        .filter(p -> matcher.matches(dir.relativize(p)))
                         .forEach(p -> out.add(
                                 ResolvedSource.createLocal(p.toAbsolutePath().normalize())));
 

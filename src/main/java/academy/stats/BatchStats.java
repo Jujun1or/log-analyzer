@@ -9,7 +9,7 @@ public record BatchStats(
         long totalBytes,
         int maxBytes,
         Map<Integer, Long> responseSizeFreq,
-        Map<Integer, Long> responseCade,
+        Map<Integer, Long> responseCode,
         Map<String, Long> resources,
         Map<LocalDate, Long> requestsByDate,
         Set<String> uniqueProtocols) {}

@@ -12,6 +12,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,10 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class RemoteBatchReader implements BatchReader {
+
+    private static final HttpClient CLIENT =
+            HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+
     private final LineParser parser;
     private final URI uri;
     private final Predicate<Instant> timeFilter;
@@ -33,21 +38,28 @@ public class RemoteBatchReader implements BatchReader {
 
     @Override
     public void readBatches(Consumer<Batch> batchConsumer) throws IOException {
+
         List<LogEntry> buffer = new ArrayList<>(batchSize);
-        HttpRequest request = HttpRequest.newBuilder(uri).GET().build();
 
-        try (HttpClient client = HttpClient.newHttpClient()) {
-            HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-            int statusCode = response.statusCode();
-            if (statusCode >= 400 && statusCode < 500) {
-                throw new IOException("Remote resource not found: " + uri);
+        HttpRequest request = HttpRequest.newBuilder(uri)
+                .timeout(Duration.ofSeconds(10))
+                .GET()
+                .build();
+
+        try {
+            HttpResponse<InputStream> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofInputStream());
+
+            int status = response.statusCode();
+
+            if (status >= 400 && status < 500) {
+                throw new IOException("Client error (4xx) when fetching " + uri);
             }
-            if (statusCode < 200 || statusCode >= 300) {
-                throw new IOException("Unexpected HTTP status " + statusCode + " for " + uri);
+            if (status < 200 || status >= 300) {
+                throw new IOException("Unexpected HTTP status " + status + " for " + uri);
             }
 
-            try (InputStream body = response.body();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(body, StandardCharsets.UTF_8))) {
+            try (BufferedReader reader =
+                    new BufferedReader(new InputStreamReader(response.body(), StandardCharsets.UTF_8))) {
 
                 String line;
                 while ((line = reader.readLine()) != null) {
@@ -56,11 +68,12 @@ public class RemoteBatchReader implements BatchReader {
                             .ifPresent(entry -> processEntry(entry, buffer, batchConsumer, batchSize));
                 }
             }
+
             flush(buffer, batchConsumer);
 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IOException("Thread interrupted while reading remote resource: " + uri, e);
+            throw new IOException("Interrupted while reading remote resource " + uri, e);
         }
     }
 }

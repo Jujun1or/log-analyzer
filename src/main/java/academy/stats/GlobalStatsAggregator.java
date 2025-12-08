@@ -25,7 +25,7 @@ public class GlobalStatsAggregator {
         maxBytes = Math.max(maxBytes, stats.maxBytes());
 
         mergeMap(responseSizeFreq, stats.responseSizeFreq());
-        mergeMap(responseCodes, stats.responseCade());
+        mergeMap(responseCodes, stats.responseCode());
         mergeMap(resources, stats.resources());
         mergeMap(requestsByDate, stats.requestsByDate());
 

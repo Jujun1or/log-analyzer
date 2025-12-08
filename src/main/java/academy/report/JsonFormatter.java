@@ -31,7 +31,15 @@ public class JsonFormatter implements ReportFormatter {
 
             return new JsonReport(
                     sources.stream()
-                            .map(s -> Path.of(s.displayName()).getFileName().toString())
+                            .map(s -> {
+                                if (s.remote()) {
+                                    return s.displayName();
+                                } else {
+                                    return Path.of(s.displayName())
+                                            .getFileName()
+                                            .toString(); // имя файла
+                                }
+                            })
                             .sorted()
                             .toList(),
                     stats.totalRequests(),
