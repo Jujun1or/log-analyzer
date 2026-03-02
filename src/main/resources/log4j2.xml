@@ -5,9 +5,9 @@
                    https://logging.apache.org/xml/ns/log4j-config-2.xsd">
 
     <Appenders>
-        <File name="FILE_JSON" fileName="logs/${date:yyyy-MM-dd-HH-mm-ss}.log">
-            <JsonTemplateLayout eventTemplateUri="classpath:LogLayout.json"/>
-        </File>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5level %c{1} - %msg%n"/>
+        </Console>
     </Appenders>
 
     <Loggers>
@@ -17,7 +17,7 @@
         <Logger name="sun.rmi.transport" level="WARN"/>
 
         <Root level="INFO">
-            <AppenderRef ref="FILE_JSON"/>
+            <AppenderRef ref="Console"/>
         </Root>
     </Loggers>
 </Configuration>
